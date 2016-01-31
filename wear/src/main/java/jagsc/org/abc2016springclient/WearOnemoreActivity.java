@@ -23,7 +23,7 @@ public class WearOnemoreActivity extends WearableActivity implements View.OnClic
                 startActivity(intent);
                 break;
             case R.id.btn_to_exit://btn_to_exitが押されたらアプリケーション終了
-                break;//どうやって終了させるの？
+                break;//どうやって終了させる？
         }//どちらの場合もhandheldとサーバに次どうするかという命令を送らないといけない
 
     }
