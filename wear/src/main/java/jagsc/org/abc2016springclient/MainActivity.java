@@ -69,7 +69,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
     }
     public void onClick(View view){
         switch (view.getId()){
-            case R.id.btn_to_result://btn_to_resultボタンが押されたら
+            case R.id.btn_to_result://btn_to_resultボタンが押された
                 Intent intent = new Intent(this, WearResultActivity.class);//WearResultActivityに遷移
                 startActivity(intent);
                 break;
