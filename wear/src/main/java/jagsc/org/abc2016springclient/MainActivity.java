@@ -55,7 +55,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
     }
 
     private void updateDisplay() {
-        if (isAmbient()) {
+    /*    if (isAmbient()) {
             mContainerView.setBackgroundColor(getResources().getColor(android.R.color.black));
             mTextView.setTextColor(getResources().getColor(android.R.color.white));
             mClockView.setVisibility(View.VISIBLE);
@@ -66,7 +66,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
             mTextView.setTextColor(getResources().getColor(android.R.color.black));
             mClockView.setVisibility(View.GONE);
         }
-    }
+    */}
     public void onClick(View view){
         switch (view.getId()){
             case R.id.btn_to_result://btn_to_resultボタンが押された

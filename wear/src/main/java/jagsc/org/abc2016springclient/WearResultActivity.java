@@ -27,33 +27,31 @@ import com.google.android.gms.wearable.Wearable;
 public class WearResultActivity extends WearableActivity implements View.OnClickListener,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener{
     private GoogleApiClient mGoogleApiClient;
     private Button button_onemore;//onmore画面への遷移のボタン
+    private Button btn_win;
+    private Button btn_lose;
     private String resultwl="win";//送られてきた勝敗結果が入る
 
 
      @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_result_wear);//activity_result_wearを表示
+         super.onCreate(savedInstanceState);
+         setContentView(R.layout.activity_result_wear);//activity_result_wearを表示
 
          mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
-         button_onemore=(Button)findViewById(R.id.btn_to_onemore);
+         button_onemore = (Button) findViewById(R.id.btn_to_onemore);
          button_onemore.setOnClickListener(this);
 
-    }
-    Button btnwin = (Button) findViewById(R.id.btn_win);
-    Button btnlose = (Button) findViewById(R.id.btn_lose);
-    //勝敗結果が送られてきてそれがresultに入る
-/*   if(resultwl.equals("win")){//resultwlの中身がwinなら
-        btnwin.setVisibility(visible)//btnwinのvisiblityをvisibleに
-        btnlose.setVisibility(invisible);//btnloseのvisiblityをinvisibleに
-    }else if(resultwl.equals("lose")) {//resultの中身がloseなら
-        btnlose.setVisibility(visible);//btnloseのvisiblityをvisibleに
-        btnwin.setVisibility(invisible)//btnwinのvisiblityをinvisibleに
-    }
-*/
-//↑ここの行でequalsが使えなく、更にvisiblityの変更もエラーになる
 
-
+         btn_win = (Button) findViewById(R.id.btn_win);
+         btn_lose = (Button) findViewById(R.id.btn_lose);
+         if (resultwl.equals("win")==true) {//resultwlの中身がwinなら
+             btn_win.setVisibility(View.VISIBLE);//btnwinのvisiblityをvisibleに
+             btn_lose.setVisibility(View.INVISIBLE);//btnloseのvisiblityをinvisibleに
+         } else if (resultwl.equals("lose")) {//resultの中身がloseなら
+             btn_lose.setVisibility(View.VISIBLE);//btnloseのvisiblityをvisibleに
+             btn_win.setVisibility(View.INVISIBLE);//btnwinのvisiblityをinvisibleに
+         }
+     }
 
     @Override
     public void onClick(View v){
