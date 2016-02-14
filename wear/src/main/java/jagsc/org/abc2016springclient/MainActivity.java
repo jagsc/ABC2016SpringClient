@@ -29,7 +29,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 
     private static final SimpleDateFormat AMBIENT_DATE_FORMAT = new SimpleDateFormat("HH:mm", Locale.US);
 
-    private GoogleApiClient mGoogleApiClient;
+    //private GoogleApiClient mGoogleApiClient;
     private BoxInsetLayout mContainerView;
     private TextView mTextView;
     private TextView mClockView;
@@ -37,13 +37,18 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
     private String scene;//dataAPIのシーン情報のkey
     private boolean ready;//準備完了状態
 
+    private GlobalVariables globalv;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_title_wear);//起動時にactivity_title_wearを表示する
         setAmbientEnabled();
-        mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
-        mGoogleApiClient.connect();//接続
+
+        globalv=(GlobalVariables) this.getApplication();
+
+        globalv.mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
+        //mGoogleApiClient.connect();//接続
 
         /*mContainerView = (BoxInsetLayout) findViewById(R.id.container);
         mTextView = (TextView) findViewById(R.id.text);
@@ -71,6 +76,30 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
         super.onExitAmbient();
     }
 
+    @Override
+    protected void onPause(){
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        globalv.mGoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        if(globalv.mGoogleApiClient != null && globalv.mGoogleApiClient.isConnected()){
+            globalv.mGoogleApiClient.disconnect();
+        }
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+    }
+
     private void updateDisplay() {
     /*    if (isAmbient()) {
             mContainerView.setBackgroundColor(getResources().getColor(android.R.color.black));
@@ -88,7 +117,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
         switch (view.getId()){
             case R.id.btn_to_result://btn_to_resultボタンが押された
                 Intent intent = new Intent(this, WearResultActivity.class);//WearResultActivityに遷移
-                intent.putExtra("Connection", (Serializable) mGoogleApiClient);//データ確立情報が次のactivityに送られる？
+                //intent.putExtra("Connection", (Serializable) mGoogleApiClient);//データ確立情報が次のactivityに送られる？
                 startActivity(intent);
                 break;
             case R.id.btn_to_start://readyを真にする
