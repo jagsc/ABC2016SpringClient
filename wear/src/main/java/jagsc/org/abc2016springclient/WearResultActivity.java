@@ -37,7 +37,7 @@ import com.google.android.gms.wearable.Wearable;
  */
 public class WearResultActivity extends WearableActivity implements View.OnClickListener,GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,DataApi.DataListener{ //DataApi.DataListener  {
 
-    private GoogleApiClient mGoogleApiClient;
+    //private GoogleApiClient mGoogleApiClient;
     private Button button_onemore;//onmore画面への遷移のボタン
     private Button btn_win;
     private Button btn_lose;
@@ -45,33 +45,36 @@ public class WearResultActivity extends WearableActivity implements View.OnClick
     private String scene;//dataAPIのシーン情報のkey
     private String datapath;//データアクセスパス
 
+    private GlobalVariables globalv;
 
 
-     @Override
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
-         super.onCreate(savedInstanceState);
-         setContentView(R.layout.activity_result_wear);//activity_result_wearを表示
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_result_wear);//activity_result_wearを表示
 
 
-         button_onemore = (Button) findViewById(R.id.btn_to_onemore);
-         button_onemore.setOnClickListener(this);
-         mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
-         mGoogleApiClient.connect();//接続
+        button_onemore = (Button) findViewById(R.id.btn_to_onemore);
+        button_onemore.setOnClickListener(this);
 
-         PutDataRequest dataMapRequest = PutDataRequest.create(datapath);
+        globalv=(GlobalVariables) this.getApplication();
+        //mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
+        //mGoogleApiClient.connect();//接続
+
+        //PutDataRequest dataMapRequest = PutDataRequest.create(datapath);
 
 
 
-         btn_win = (Button) findViewById(R.id.btn_win);
-         btn_lose = (Button) findViewById(R.id.btn_lose);
-         if (resultwl.equals("win")==true) {//resultwlの中身がwinなら
-             btn_win.setVisibility(View.VISIBLE);//btnwinのvisiblityをvisibleに
-             btn_lose.setVisibility(View.INVISIBLE);//btnloseのvisiblityをinvisibleに
-         } else if (resultwl.equals("lose")) {//resultの中身がloseなら
-             btn_lose.setVisibility(View.VISIBLE);//btnloseのvisiblityをvisibleに
-             btn_win.setVisibility(View.INVISIBLE);//btnwinのvisiblityをinvisibleに
-         }
-     }
+        btn_win = (Button) findViewById(R.id.btn_win);
+        btn_lose = (Button) findViewById(R.id.btn_lose);
+        if (resultwl.equals("win")==true) {//resultwlの中身がwinなら
+            btn_win.setVisibility(View.VISIBLE);//btnwinのvisiblityをvisibleに
+            btn_lose.setVisibility(View.INVISIBLE);//btnloseのvisiblityをinvisibleに
+        } else if (resultwl.equals("lose")==true) {//resultの中身がloseなら
+            btn_lose.setVisibility(View.VISIBLE);//btnloseのvisiblityをvisibleに
+            btn_win.setVisibility(View.INVISIBLE);//btnwinのvisiblityをinvisibleに
+        }
+    }
 
     @Override
     public void onClick(View v){
@@ -83,16 +86,31 @@ public class WearResultActivity extends WearableActivity implements View.OnClick
         }
 
     }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        globalv.mGoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        if(globalv.mGoogleApiClient != null && globalv.mGoogleApiClient.isConnected()){
+            globalv.mGoogleApiClient.disconnect();
+        }
+    }
+
     @Override
     public void onDataChanged(DataEventBuffer dataEventBuffer) {//handheld側からのデータの受け取り部
-        DataItemBuffer itemBuffer = Wearable.DataApi.getDataItems(mGoogleApiClient).await();
+        DataItemBuffer itemBuffer = Wearable.DataApi.getDataItems(globalv.mGoogleApiClient).await();
         for(DataItem item : itemBuffer) {
             if(datapath.equals(item.getUri().getPath())) {
                 DataMap map = DataMap.fromByteArray(item.getData());
                 scene = map.getString("scene_name");//sceneにscene_nameという名で関連付けられたデータが入る?
             }
         }
-        if(scene.equals("scene:Onemore")) {
+        if(scene.equals("scene:Onemore")==true) {
             Intent intent = new Intent(this, WearOnemoreActivity.class);//WearOnemoreActivityへ遷移
             startActivity(intent);
         }
