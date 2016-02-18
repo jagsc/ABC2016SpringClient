@@ -12,21 +12,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="スタート"
-            android:id="@+id/start_btn"
+            android:id="@+id/btn"
             android:layout_row="0"
             android:layout_column="0"
-            android:layout_gravity="top|center_horizontal"
-            android:textSize="25dp" />
+            android:textSize="25dp"
+            android:layout_gravity="center_horizontal" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="設定"
-            android:id="@+id/setting_btn"
-            android:layout_row="6"
+            android:text="resultへ"
+            android:id="@+id/btn_to_result"
+            android:layout_row="5"
             android:layout_column="0"
-            android:layout_gravity="bottom|center_horizontal"
-            android:textSize="25dp" />
+            android:layout_gravity="center_horizontal" />
+
     </GridLayout>
 
 </LinearLayout>
