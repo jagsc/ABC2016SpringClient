@@ -110,9 +110,16 @@ public class WearResultActivity extends WearableActivity implements View.OnClick
                 scene = map.getString("scene_name");//sceneにscene_nameという名で関連付けられたデータが入る?
             }
         }
-        if(scene.equals("scene:Onemore")==true) {
-            Intent intent = new Intent(this, WearOnemoreActivity.class);//WearOnemoreActivityへ遷移
-            startActivity(intent);
+        switch(scene){
+            case  "scene:Title":
+                Intent intenttit = new Intent(this, MainActivity.class);//MainActivityへ遷移
+                startActivity(intenttit);
+            case "scene:Playing":
+                Intent intentplay = new Intent(this, WearPlayingActivity.class);//WearPlayingActivityへ遷移
+                startActivity(intentplay);
+            case "scene:Onemore":
+                Intent intentone = new Intent(this, WearOnemoreActivity.class);//WearOnemoreActivityへ遷移
+                startActivity(intentone);
         }
     }
 

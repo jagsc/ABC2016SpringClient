@@ -143,9 +143,16 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 
     public void onDataChanged(DataEventBuffer dataEventBuffer) {//dataAPIが更新されたら自動で呼び出される
     //プレイヤーの準備ができているかはwear側で操作するのでここのonDataChangedはいらないのでは？
-        if (scene.equals("scene:Playing")) {
-            Intent intent = new Intent(this, WearPlayingActivity.class);//WearPlayingActivityへ遷移
-            startActivity(intent);
+        switch(scene){
+            case "scene:Playing":
+                Intent intentplay = new Intent(this, WearPlayingActivity.class);//WearPlayingActivityへ遷移
+                startActivity(intentplay);
+            case  "scene:Result":
+                Intent intentres = new Intent(this, WearResultActivity.class);//WearResultActivityへ遷移
+                startActivity(intentres);
+            case "scene:Onemore":
+                Intent intentone = new Intent(this, WearOnemoreActivity.class);//WearOnemoreActivityへ遷移
+                startActivity(intentone);
         }
     }
 

@@ -102,9 +102,16 @@ public class WearPlayingActivity extends WearableActivity implements View.OnClic
             vib.vibrate(50);//50ミリ秒バイブさせる
             Vibe=false;
         }
-        if(scene.equals("scene:Result")==true) {
-            Intent intent = new Intent(this, WearResultActivity.class);//WearResultActivityへ遷移
-            startActivity(intent);
+        switch(scene){
+            case  "scene:Title":
+                Intent intenttit = new Intent(this, MainActivity.class);//MainActivityへ遷移
+                startActivity(intenttit);
+            case "scene:Result":
+                Intent intentres = new Intent(this, WearResultActivity.class);//WearResultActivityへ遷移
+                startActivity(intentres);
+            case "scene:Onemore":
+                Intent intentone = new Intent(this, WearOnemoreActivity.class);//WearOnemoreActivityへ遷移
+                startActivity(intentone);
         }
     }
 
