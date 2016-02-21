@@ -151,7 +151,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
                 Log.d("TAG", "DataItem changed: " + event.getDataItem().getUri());
                 DataMap dataMap = DataMap.fromByteArray(event.getDataItem().getData());
                 //variable = dataMap.get~("keyname"); で受け取る
-                scene = dataMap.getString("scenename");
+                scene = dataMap.getString("scene_name");
 
                 runOnUiThread(new Runnable() {
                     @Override
@@ -173,7 +173,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
         PutDataMapRequest dataMapRequest = PutDataMapRequest.create(datapath);
         DataMap dataMap = dataMapRequest.getDataMap();
         //Data set
-        dataMap.putString("scenename", scenedata);//("keyname",data);
+        dataMap.putString("scene_name", scenedata);//("keyname",data);
 
         // Data Push
         PutDataRequest request = dataMapRequest.asPutDataRequest();

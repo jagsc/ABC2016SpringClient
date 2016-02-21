@@ -18,12 +18,16 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
 import java.util.Set;
@@ -43,6 +47,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private String resultstr;
 
     private boolean connected_;
+
+
+    private GlobalVariables globalv;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         setSupportActionBar(toolbar);
 
 
+
+        globalv=(GlobalVariables) this.getApplication();
         mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
         resultstr="";
 
@@ -240,6 +250,32 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 });
             }
         }
+    }
+
+
+    /*データの種類
+    key	     type    備考        format(BluetoothSPP)
+    --------------------------------------------------
+    scene    string  シーン情報   "scene:ex"
+    ready    boolean 準備完了状態 "ready:ex"
+    vibrator integer バイブ時間   "vibrator:ex(ms)"
+    */
+    public void SyncData(String key_name,String sync_data){//HandheldとWear間の各種データの更新をする。データの種類は上記のコメントを参照
+        PutDataMapRequest dataMapRequest = PutDataMapRequest.create(globalv.DATA_PATH);
+        DataMap dataMap = dataMapRequest.getDataMap();
+        //Data set
+        dataMap.putString(key_name, sync_data);//("keyname",data);
+
+        // Data Push
+        PutDataRequest request = dataMapRequest.asPutDataRequest();
+        PendingResult<DataApi.DataItemResult> pendingResult = Wearable.DataApi.putDataItem(mGoogleApiClient, request);
+        pendingResult.setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+            @Override
+            public void onResult(DataApi.DataItemResult dataItemResult) {
+                Log.d("TAG", "onResult:" + dataItemResult.getStatus().toString());
+            }
+        });
+
     }
 
     @Override

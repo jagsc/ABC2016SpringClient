@@ -38,8 +38,12 @@ public class BluetoothClient {
     private boolean is_inited=false;
     private boolean is_connected=false;
 
+
+    private GlobalVariables globalv;
+
     public BluetoothClient(MainActivity activity) {
         this.activity = activity;
+        globalv=(GlobalVariables) activity.getApplication();
     }
 
     /**
@@ -216,10 +220,7 @@ public class BluetoothClient {
                 btOut.write(buffer_);
                 btOut.flush();
 
-                byte[] buff = new byte[512];
-                int len = btIn.read(buff); // TODO:ループして読み込み
-
-                return new String(buff, 0, len);
+                return null;
             } catch (Throwable t) {
                 doClose();
                 return t;
@@ -231,9 +232,6 @@ public class BluetoothClient {
             if (result instanceof Exception) {
                 Log.e(TAG,result.toString(),(Throwable)result);
                 activity.errorDialog(result.toString());
-            } else {
-                // 結果を画面に反映。
-                //activity.doSetResultText(result.toString());
             }
         }
     }
@@ -260,9 +258,15 @@ public class BluetoothClient {
             } else {
                 // 結果を画面に反映。
                 //activity.doSetResultText(result.toString());
+                String[] detection_code = result.toString().split(":", 0);
+                if(detection_code[0].equals("scene")){
+                    activity.SyncData(detection_code[1], "scene_name");
+                }else if(detection_code[0].equals("ready")){
+                    activity.SyncData(detection_code[1],detection_code[0]);
+                }else if(detection_code[0].equals("vibrator")){
+                    activity.SyncData(detection_code[1],detection_code[0]);
+                }
 
-                // TODO:Wearに転送する処理
-                Toast.makeText(activity, result.toString(), Toast.LENGTH_SHORT).show();//とりあえずトーストで表示
             }
         }
     }
