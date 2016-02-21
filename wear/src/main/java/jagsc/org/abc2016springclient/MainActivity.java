@@ -12,17 +12,19 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Wearable;
 
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 
 public class MainActivity extends WearableActivity implements View.OnClickListener,GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,DataApi.DataListener,MessageApi.MessageListener{
@@ -127,6 +129,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 
     @Override
     public void onConnected(Bundle bundle) {
+        Wearable.DataApi.addListener(globalv.mGoogleApiClient, this);
         Log.d("TAG", "onConnected");
     }
 
@@ -137,12 +140,51 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 
 
 
-    public void onDataChanged(DataEventBuffer dataEventBuffer) {//dataAPIが更新されたら自動で呼び出される
+    //Handheldで変更されたシーンの情報を受け取る
+    public void onDataChanged(DataEventBuffer dataEvents) {//dataAPIが更新されたら自動で呼び出される
 
-        if (scene.equals("scene:Onemore")) {
-            Intent intent = new Intent(this, WearOnemoreActivity.class);//WearOnemoreActivityへ遷移
-            startActivity(intent);
+
+        for (DataEvent event : dataEvents) {
+            if (event.getType() == DataEvent.TYPE_DELETED) {
+                Log.d("TAG", "DataItem deleted: " + event.getDataItem().getUri());
+            } else if (event.getType() == DataEvent.TYPE_CHANGED) {
+                Log.d("TAG", "DataItem changed: " + event.getDataItem().getUri());
+                DataMap dataMap = DataMap.fromByteArray(event.getDataItem().getData());
+                //variable = dataMap.get~("keyname"); で受け取る
+                scene = dataMap.getString("scene_name");
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //受け取り後の処理をここに
+                        //resultview.setText(resultstr);
+
+                        if (scene.equals("scene:Onemore")) {
+                            Intent intent = new Intent(MainActivity.this,WearOnemoreActivity.class);//WearOnemoreActivityへ遷移
+                            startActivity(intent);
+                        }
+                    }
+                });
+            }
         }
+    }
+
+    public void SyncScene(String scenedata,String datapath){//HandheldとWear間のシーンの更新をする
+        PutDataMapRequest dataMapRequest = PutDataMapRequest.create(datapath);
+        DataMap dataMap = dataMapRequest.getDataMap();
+        //Data set
+        dataMap.putString("scene_name", scenedata);//("keyname",data);
+
+        // Data Push
+        PutDataRequest request = dataMapRequest.asPutDataRequest();
+        PendingResult<DataApi.DataItemResult> pendingResult = Wearable.DataApi.putDataItem(globalv.mGoogleApiClient, request);
+        pendingResult.setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+            @Override
+            public void onResult(DataApi.DataItemResult dataItemResult) {
+                Log.d("TAG", "onResult:" + dataItemResult.getStatus().toString());
+            }
+        });
+
     }
 
     @Override
