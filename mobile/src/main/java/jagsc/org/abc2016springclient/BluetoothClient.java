@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Created by HayatoKimura on 2016/02/17.
+ * Created by prprhyt on 2016/02/17.
  */
 public class BluetoothClient {
 
@@ -271,3 +271,4 @@ public class BluetoothClient {
         }
     }
 }
+

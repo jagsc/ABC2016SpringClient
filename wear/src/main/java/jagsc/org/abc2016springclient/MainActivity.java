@@ -169,11 +169,18 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
         }
     }
 
-    public void SyncScene(String scenedata,String datapath){//HandheldとWear間のシーンの更新をする
-        PutDataMapRequest dataMapRequest = PutDataMapRequest.create(datapath);
+    /*データの種類
+    key	     type    備考        format(BluetoothSPP)
+    --------------------------------------------------
+    scene    string  シーン情報   "scene:ex"
+    ready    boolean 準備完了状態 "ready:ex"
+    vibrator integer バイブ時間   "vibrator:ex(ms)"
+    */
+    public void SyncData(String key_name,String sync_data){//HandheldとWear間の各種データの更新をする。データの種類は上記のコメントを参照
+        PutDataMapRequest dataMapRequest = PutDataMapRequest.create(globalv.DATA_PATH);
         DataMap dataMap = dataMapRequest.getDataMap();
         //Data set
-        dataMap.putString("scene_name", scenedata);//("keyname",data);
+        dataMap.putString(key_name, sync_data);//("keyname",data);
 
         // Data Push
         PutDataRequest request = dataMapRequest.asPutDataRequest();
@@ -186,7 +193,6 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
         });
 
     }
-
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.e("TAG", "onConnectionFailed");
