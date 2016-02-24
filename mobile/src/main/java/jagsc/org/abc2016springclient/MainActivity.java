@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
+        resultview = (TextView) findViewById(R.id.resulttxtview);
 
         globalv=(GlobalVariables) this.getApplication();
         mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onResume();
 
         mGoogleApiClient.connect();
-        if(bluetoothClient.is_inited()){
+        if(bluetoothClient.have_connected()){
             bluetoothClient.doConnect(null);
         }else{
             // Bluetooth初期化
