@@ -39,6 +39,9 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 
     private GlobalVariables globalv;
 
+    private int state;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +49,16 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
         setAmbientEnabled();
 
         globalv=(GlobalVariables) this.getApplication();
+
+        WearBluetoothTask wbttask = new WearBluetoothTask();//WearBluetoothTaskのコンストラクタ呼び出し
+        wbttask.strstate = wbttask.getBondState(state);//strstateに接続中かエラーかの文字が入る
+
+        //Bluetoothの接続ができているか判定し、readyの状態を変更する。
+        if(wbttask.equals("接続中")){
+            ready = true;
+        }else if(wbttask.equals("エラー")){
+            ready = false;
+        }
 
         globalv.mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
         //mGoogleApiClient.connect();//接続
@@ -165,4 +178,5 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
     public void onMessageReceived(MessageEvent messageEvent) {
 
     }
+
 }
