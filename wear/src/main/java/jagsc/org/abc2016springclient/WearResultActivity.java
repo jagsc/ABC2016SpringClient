@@ -108,8 +108,18 @@ public class WearResultActivity extends WearableActivity implements View.OnClick
             if(datapath.equals(item.getUri().getPath())) {
                 DataMap map = DataMap.fromByteArray(item.getData());
                 scene = map.getString("scene_name");//sceneにscene_nameという名で関連付けられたデータが入る?
+                resultwl = map.getString("win_lose");//勝敗の結果を入れる
             }
         }
+
+        if (resultwl.equals("win")==true) {//resultwlの中身がwinなら
+            btn_win.setVisibility(View.VISIBLE);//btnwinのvisiblityをvisibleに
+            btn_lose.setVisibility(View.INVISIBLE);//btnloseのvisiblityをinvisibleに
+        } else if (resultwl.equals("lose")==true) {//resultの中身がloseなら
+            btn_lose.setVisibility(View.VISIBLE);//btnloseのvisiblityをvisibleに
+            btn_win.setVisibility(View.INVISIBLE);//btnwinのvisiblityをinvisibleに
+        }
+
         switch(scene){
             case  "scene:Title":
                 Intent intenttit = new Intent(this, MainActivity.class);//MainActivityへ遷移
