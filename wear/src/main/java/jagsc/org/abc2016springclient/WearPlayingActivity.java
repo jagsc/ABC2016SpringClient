@@ -22,6 +22,7 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataItemBuffer;
@@ -89,30 +90,51 @@ public class WearPlayingActivity extends WearableActivity implements View.OnClic
     }
 
     @Override
-    public void onDataChanged(DataEventBuffer dataEventBuffer) {//handheld側からのデータの受け取り部
-        DataItemBuffer itemBuffer = Wearable.DataApi.getDataItems(globalv.mGoogleApiClient).await();
-        for(DataItem item : itemBuffer) {
-            if(datapath.equals(item.getUri().getPath())) {
-                DataMap map = DataMap.fromByteArray(item.getData());
-                scene = map.getString("scene_name");//sceneにscene_nameという名で関連付けられたデータが入る?
-                Vibe = map.getBoolean("Vibe");//Vibeにtrueかfalseどちらかの値が入る
+    public void onDataChanged(DataEventBuffer dataEventBuffer) {//dataAPIが更新されたら自動で呼び出される
+        for (DataEvent event : dataEventBuffer) {
+            if (event.getType() == DataEvent.TYPE_DELETED) {
+                Log.d("TAG", "DataItem deleted: " + event.getDataItem().getUri());
+            } else if (event.getType() == DataEvent.TYPE_CHANGED) {
+                Log.d("TAG", "DataItem changed: " + event.getDataItem().getUri());
+                DataMap dataMap = DataMap.fromByteArray(event.getDataItem().getData());
+                //variable = dataMap.get~("keyname"); で受け取る
+
+
+                switch(event.getDataItem().getUri().toString()) {
+                    case "scene":
+                        scene = dataMap.getString("scene");
+                        switch (scene) {
+                            case "scene:title":
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        //受け取り後の処理をここに
+                                        //resultview.setText(resultstr);
+                                        Intent intentplay = new Intent(WearPlayingActivity.this, MainActivity.class);//WearPlayingActivityへ遷移
+                                        startActivity(intentplay);
+                                    }
+                                });
+                                break;
+                            case "scene:result":
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        //受け取り後の処理をここに
+                                        //resultview.setText(resultstr);
+                                        Intent intentplay = new Intent(WearPlayingActivity.this, WearResultActivity.class);//WearPlayingActivityへ遷移
+                                        startActivity(intentplay);
+                                    }
+                                });
+                                break;
+                        }
+                    case "viberator":
+                        int num=dataMap.getInt("viberator");
+                        vib = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);//バイブさせるためのサービスをvibに入れる
+                        vib.vibrate(num);//50ミリ秒バイブさせる
+                        break;
+                }
+
             }
-        }
-        if(Vibe==true){
-            vib = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);//バイブさせるためのサービスをvibに入れる
-            vib.vibrate(50);//50ミリ秒バイブさせる
-            Vibe=false;
-        }
-        switch(scene){
-            case  "scene:Title":
-                Intent intenttit = new Intent(this, MainActivity.class);//MainActivityへ遷移
-                startActivity(intenttit);
-            case "scene:Result":
-                Intent intentres = new Intent(this, WearResultActivity.class);//WearResultActivityへ遷移
-                startActivity(intentres);
-            case "scene:Onemore":
-                Intent intentone = new Intent(this, WearOnemoreActivity.class);//WearOnemoreActivityへ遷移
-                startActivity(intentone);
         }
     }
 
