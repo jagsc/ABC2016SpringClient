@@ -48,17 +48,18 @@ public class WearOnemoreActivity extends WearableActivity implements View.OnClic
         setContentView(R.layout.activity_onemore_wear);//activity_onemore_wearを表示
 
 
-        button_title=(Button)findViewById(R.id.btn_title);
+        /*button_title=(Button)findViewById(R.id.btn_title);
         button_title.setOnClickListener(this);
         button_exit=(Button)findViewById(R.id.btn_to_exit);
         button_exit.setOnClickListener(this);
+        */
 
         globalv=(GlobalVariables) this.getApplication();
     }
 
     @Override
     public void onClick(View v){
-        switch (v.getId()){
+        /*switch (v.getId()){
             case R.id.btn_title://btn_titleが押されたら
                 Intent intent = new Intent(this, MainActivity.class);//MainActivityへ遷移
                 startActivity(intent);
@@ -67,6 +68,7 @@ public class WearOnemoreActivity extends WearableActivity implements View.OnClic
                 this.moveTaskToBack (true);
                 break;
         }
+        */
 
     }
 

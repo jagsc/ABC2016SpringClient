@@ -41,7 +41,7 @@ public class WearResultActivity extends WearableActivity implements View.OnClick
     private Button button_onemore;//onmore画面への遷移のボタン
     private Button btn_win;
     private Button btn_lose;
-    private String resultwl="win";//送られてきた勝敗結果が入る
+    private String resultwl;//送られてきた勝敗結果が入る
     private String scene;//dataAPIのシーン情報のkey
     private String datapath;//データアクセスパス
 
@@ -54,8 +54,9 @@ public class WearResultActivity extends WearableActivity implements View.OnClick
         setContentView(R.layout.activity_result_wear);//activity_result_wearを表示
 
 
-        button_onemore = (Button) findViewById(R.id.btn_to_onemore);
+        /*button_onemore = (Button) findViewById(R.id.btn_to_onemore);
         button_onemore.setOnClickListener(this);
+        */
 
         globalv=(GlobalVariables) this.getApplication();
         //mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
@@ -67,23 +68,25 @@ public class WearResultActivity extends WearableActivity implements View.OnClick
 
         btn_win = (Button) findViewById(R.id.btn_win);
         btn_lose = (Button) findViewById(R.id.btn_lose);
-        if (resultwl.equals("win")==true) {//resultwlの中身がwinなら
+        /*if (resultwl.equals("win")==true) {//resultwlの中身がwinなら
             btn_win.setVisibility(View.VISIBLE);//btnwinのvisiblityをvisibleに
             btn_lose.setVisibility(View.INVISIBLE);//btnloseのvisiblityをinvisibleに
         } else if (resultwl.equals("lose")==true) {//resultの中身がloseなら
             btn_lose.setVisibility(View.VISIBLE);//btnloseのvisiblityをvisibleに
             btn_win.setVisibility(View.INVISIBLE);//btnwinのvisiblityをinvisibleに
         }
+        */
     }
 
     @Override
     public void onClick(View v){
-        switch (v.getId()){
+        /*switch (v.getId()){
             case R.id.btn_to_onemore://btn_to_onemoreが押されたら
                 Intent intent = new Intent(this, WearOnemoreActivity.class);//WearOnemoreActivityへ遷移
                 startActivity(intent);
                 break;
         }
+        */
 
     }
 

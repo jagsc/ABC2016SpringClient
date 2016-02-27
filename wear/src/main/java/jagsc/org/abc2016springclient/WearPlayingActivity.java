@@ -65,12 +65,13 @@ public class WearPlayingActivity extends WearableActivity implements View.OnClic
 
     @Override
     public void onClick(View v){//デバッグ用
-        switch (v.getId()){
+        /*switch (v.getId()){
             case R.id.btn_vibe://btn_vibeが押されたら
                 vib = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);//バイブさせるためのサービスをvibに入れる
                 vib.vibrate(50);//50ミリ秒バイブさせる
                 break;
         }
+        */
     }
 
     @Override

@@ -12,8 +12,14 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.DataItemBuffer;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.MessageApi;
@@ -33,9 +39,11 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
     private BoxInsetLayout mContainerView;
     private TextView mTextView;
     private TextView mClockView;
+    private Button btn_start;
     private Button button_result;//result画面への遷移のボタン
     private String scene;//dataAPIのシーン情報のkey
     private boolean ready;//準備完了状態
+    private String datapath;
 
     private GlobalVariables globalv;
 
@@ -56,8 +64,11 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
         //Bluetoothの接続ができているか判定し、readyの状態を変更する。
         if(wbttask.equals("接続中")){
             ready = true;
+            btn_start.setVisibility(View.VISIBLE);
         }else if(wbttask.equals("エラー")){
             ready = false;
+            btn_start.setVisibility(View.INVISIBLE);
+            mTextView.setText("Bluetoothの設定を行ってから再度実行してください");
         }
 
         globalv.mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
@@ -67,8 +78,12 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
         mTextView = (TextView) findViewById(R.id.text);
         mClockView = (TextView) findViewById(R.id.clock);
         */
-        button_result=(Button)findViewById(R.id.btn_to_result);//デバッグ用
+        btn_start=(Button)findViewById(R.id.btn_to_start);
+        btn_start.setOnClickListener(this);
+
+        /*button_result=(Button)findViewById(R.id.btn_to_result);//デバッグ用
         button_result.setOnClickListener(this);//デバッグ用
+        */
     }
 
     @Override
@@ -125,6 +140,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
             mClockView.setVisibility(View.GONE);
         }
     */}
+
     public void onClick(View view){
         switch (view.getId()){
             /*case R.id.btn_to_result://btn_to_resultボタンが押された(デバッグ用)
@@ -134,9 +150,14 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
                 break;
             */
             case R.id.btn_to_start://readyが真であるという情報をサーバへ送信する
+                PutDataMapRequest dataMap = PutDataMapRequest.create(datapath);
+                dataMap.getDataMap().putBoolean("ready",true );//readyというkeyでtrueという値が送られる
+                PutDataRequest request = dataMap.asPutDataRequest();
+                PendingResult<DataApi.DataItemResult> pendingResult = Wearable.DataApi
+                        .putDataItem(globalv.mGoogleApiClient, request);
+                pendingResult.cancel();//送れなかったら動作をキャンセル？
+
                 Intent intent = new Intent(this, WearPlayingActivity.class);//btn_to_startがクリックされたらWearPlayingActivityへ遷移
-
-
                 startActivity(intent);
                 break;
         }
@@ -155,7 +176,14 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 
 
     public void onDataChanged(DataEventBuffer dataEventBuffer) {//dataAPIが更新されたら自動で呼び出される
-    //プレイヤーの準備ができているかはwear側で操作するのでここのonDataChangedはいらないのでは？
+        DataItemBuffer itemBuffer = Wearable.DataApi.getDataItems(globalv.mGoogleApiClient).await();
+        for(DataItem item : itemBuffer) {
+            if(datapath.equals(item.getUri().getPath())) {
+                DataMap map = DataMap.fromByteArray(item.getData());
+                scene = map.getString("scene_name");//sceneにscene_nameという名で関連付けられたデータが入る?
+            }
+        }
+
         switch(scene){
             case "scene:Playing":
                 Intent intentplay = new Intent(this, WearPlayingActivity.class);//WearPlayingActivityへ遷移
