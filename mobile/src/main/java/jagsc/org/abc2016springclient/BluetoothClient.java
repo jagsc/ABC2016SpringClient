@@ -35,8 +35,8 @@ public class BluetoothClient {
     private InputStream btIn;
     private OutputStream btOut;
 
-    private boolean is_inited=false;
-    private boolean is_connected=false;
+    private boolean have_connected=false; //過去に接続したことがあるかどうか
+    private boolean is_connected=false; //現在の接続状況
 
 
     private GlobalVariables globalv;
@@ -62,11 +62,10 @@ public class BluetoothClient {
             activity.errorDialog("This device is disabled Bluetooth.");
             return;
         }
-        is_inited=true;
     }
 
-    public boolean is_inited(){
-        return is_inited;
+    public boolean have_connected(){
+        return have_connected;
     }
 
     public boolean is_connected(){
@@ -154,6 +153,7 @@ public class BluetoothClient {
                 activity.errorDialog(result.toString());
             } else {
                 activity.hideWaitDialog();
+                have_connected=true;
             }
         }
     }
