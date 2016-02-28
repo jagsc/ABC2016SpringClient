@@ -1,49 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <GridLayout
+    <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="top|center">
+        android:id="@+id/imageView"
+        android:src="@drawable/title"
+        android:scaleType="fitXY"
+        android:contentDescription="@string/titleimage" />
 
-        <Button
-            android:layout_width="40dp"
-            android:layout_height="wrap_content"
-            android:text="終了"
-            android:id="@+id/btn_exit_tit"
-            android:layout_row="0"
-            android:layout_column="0"
-            android:layout_gravity="top|right" />
-<!--
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="スタート"
-            android:id="@+id/btn_to_start"
-            android:layout_row="2"
-            android:layout_column="0"
-            android:textSize="25dp"
-            android:layout_gravity="center_horizontal" />
+    <ImageButton
+        android:layout_width="75dip"
+        android:layout_height="75dip"
+        android:id="@+id/btn_to_start"
+        android:layout_gravity="center_horizontal"
+        android:src="@drawable/start"
+        android:contentDescription="@string/start"
+        android:background="@null"
+        android:layout_below="@+id/btn_exit_tit"
+        android:layout_alignEnd="@+id/btn_exit_tit"
+        android:layout_marginTop="30dp"/>
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="resultへ"
-            android:id="@+id/btn_to_result"
-            android:layout_row="5"
-            android:layout_column="0"
-            android:layout_gravity="center_horizontal" />
--->
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView_ready"
-            android:layout_row="5"
-            android:layout_column="0"
-            android:layout_gravity="center_vertical"
-            android:textSize="20dp" />
-    </GridLayout>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/exit"
+        android:id="@+id/btn_exit_tit"
+        android:layout_gravity="center_horizontal"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp" />
 
-</LinearLayout>
+</RelativeLayout>

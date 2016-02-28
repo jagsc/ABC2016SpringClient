@@ -10,7 +10,7 @@
         <Button
             android:layout_width="40dp"
             android:layout_height="wrap_content"
-            android:text="終了"
+            android:text="@string/exit"
             android:id="@+id/btn_exit_play"
             android:layout_row="0"
             android:layout_column="0"
@@ -19,7 +19,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="～ゲーム中～"
+            android:text="@string/playing"
             android:id="@+id/textView_playing"
             android:layout_row="2"
             android:layout_column="0"

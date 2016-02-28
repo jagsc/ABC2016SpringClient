@@ -5,4 +5,9 @@
     <string name="titleimage">タイトル画像</string>
     <string name="start">スタートボタン</string>
     <string name="result">結果</string>
+    <string name="thanks">ありがとうございました</string>
+    <string name="exit">終了</string>
+    <string name="win">Win</string>
+    <string name="lose">Lose</string>
+    <string name="playing">～ゲーム中～</string>
 </resources>
