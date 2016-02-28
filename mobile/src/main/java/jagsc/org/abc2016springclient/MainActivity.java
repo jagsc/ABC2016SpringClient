@@ -1,15 +1,55 @@
 package jagsc.org.abc2016springclient;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.PutDataMapRequest;
+import com.google.android.gms.wearable.PutDataRequest;
+import com.google.android.gms.wearable.Wearable;
+
+import java.util.Set;
+
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,MessageApi.MessageListener,DataApi.DataListener  {
+
+    private final static int DEVICES_DIALOG = 1;
+    private final static int ERROR_DIALOG = 2;
+
+    private BluetoothClient bluetoothClient = new BluetoothClient(this);
+
+    private ProgressDialog waitDialog;
+    private String errorMessage = "";
+
+    private GoogleApiClient mGoogleApiClient;
+    private TextView resultview;
+    private String resultstr;
+
+    private boolean connected_;
+
+
+    private GlobalVariables globalv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,6 +57,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        resultview = (TextView) findViewById(R.id.resulttxtview);
+
+        globalv=(GlobalVariables) this.getApplication();
+        mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
+        resultstr="";
 
        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -26,6 +72,210 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+    }
+
+    @Override
+    protected void onStop() {
+        // TODO Auto-generated method stub
+        super.onStop();
+        if(bluetoothClient != null && bluetoothClient.is_connected()){
+            bluetoothClient.doClose();
+        }
+        connected_ = false;
+
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        mGoogleApiClient.connect();
+        if(bluetoothClient.have_connected()){
+            bluetoothClient.doConnect(null);
+        }else{
+            // Bluetooth初期化
+            bluetoothClient.init();
+            // ペアリング済みデバイスの一覧を表示してユーザに選ばせる。
+            showDialog(DEVICES_DIALOG);
+        }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(bluetoothClient != null && bluetoothClient.is_connected()){
+            bluetoothClient.doClose();
+        }
+    }
+
+    //----------------------------------------------------------------
+    // 以下、ダイアログ関連
+    @Override
+    protected Dialog onCreateDialog(int id) {
+        if (id == DEVICES_DIALOG) return createDevicesDialog();
+        if (id == ERROR_DIALOG) return createErrorDialog();
+        return null;
+    }
+    @SuppressWarnings("deprecation")
+    @Override
+    protected void onPrepareDialog(int id, Dialog dialog) {
+        if (id == ERROR_DIALOG) {
+            ((AlertDialog) dialog).setMessage(errorMessage);
+        }
+        super.onPrepareDialog(id, dialog);
+    }
+
+    public Dialog createDevicesDialog() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle("Select device");
+
+        // ペアリング済みデバイスをダイアログのリストに設定する。
+        Set<BluetoothDevice> pairedDevices = bluetoothClient.getPairedDevices();
+        final BluetoothDevice[] devices = pairedDevices.toArray(new BluetoothDevice[0]);
+        String[] items = new String[devices.length];
+        for (int i=0;i<devices.length;i++) {
+            items[i] = devices[i].getName();
+        }
+
+        alertDialogBuilder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                // 選択されたデバイスを通知する。そのまま接続開始。
+                bluetoothClient.doConnect(devices[which]);
+            }
+        });
+        alertDialogBuilder.setCancelable(false);
+        return alertDialogBuilder.create();
+    }
+
+    @SuppressWarnings("deprecation")
+    public void errorDialog(String msg) {
+        if (this.isFinishing()) return;
+        this.errorMessage = msg;
+        this.showDialog(ERROR_DIALOG);
+    }
+    public Dialog createErrorDialog() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle("Error");
+        alertDialogBuilder.setMessage("");
+        alertDialogBuilder.setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                finish();
+            }
+        });
+        return alertDialogBuilder.create();
+    }
+
+    public void showWaitDialog(String msg) {
+        if (waitDialog == null) {
+            waitDialog = new ProgressDialog(this);
+        }
+        waitDialog.setMessage(msg);
+        waitDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        waitDialog.show();
+    }
+    public void hideWaitDialog() {
+        waitDialog.dismiss();
+        connected_ = true;
+        resultview.setText("connected");
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        if(mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+            //mGoogleApiClient.disconnect();
+            Wearable.MessageApi.removeListener(mGoogleApiClient, this);
+            mGoogleApiClient.disconnect();
+        }
+        if(bluetoothClient != null && bluetoothClient.is_connected()){
+            bluetoothClient.doClose();
+            connected_=false;
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle bundle){
+        Log.d("TAG", "onConnected");
+        Wearable.DataApi.addListener(mGoogleApiClient, this);
+        Wearable.MessageApi.addListener(mGoogleApiClient, this);
+
+    }
+    @Override
+    public void onConnectionSuspended(int i){
+        Log.d("TAG", "onConnectionSuspended");
+    }
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult){
+        Log.e("TAG", "onConnectionFailed");
+    }
+
+    @Override
+    public void onMessageReceived(MessageEvent messageEvent) {
+        if (messageEvent.getPath().equals("/sensordata")) {
+            resultstr = new String(messageEvent.getData());
+            if(connected_){
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        resultview.setText(resultstr);
+                        SendSensorNum(resultstr);
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void onDataChanged(DataEventBuffer dataEvents) {
+        for (DataEvent event : dataEvents) {
+            if (event.getType() == DataEvent.TYPE_DELETED) {
+                Log.d("TAG", "DataItem deleted: " + event.getDataItem().getUri());
+            } else if (event.getType() == DataEvent.TYPE_CHANGED) {
+                Log.d("TAG", "DataItem changed: " + event.getDataItem().getUri());
+                DataMap dataMap = DataMap.fromByteArray(event.getDataItem().getData());
+                //variable = dataMap.get~("keyname"); で受け取る
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //受け取り後の処理をここに
+                        //resultview.setText(resultstr);
+                    }
+                });
+            }
+        }
+    }
+
+
+    /*データの種類
+    key	     type    備考        format(BluetoothSPP)
+    --------------------------------------------------
+    scene    string  シーン情報   "scene:ex"
+    ready    boolean 準備完了状態 "ready:ex"
+    vibrator integer バイブ時間   "vibrator:ex(ms)"
+    */
+    public void SyncData(String key_name,String sync_data){//HandheldとWear間の各種データの更新をする。データの種類は上記のコメントを参照
+        PutDataMapRequest dataMapRequest = PutDataMapRequest.create(globalv.DATA_PATH);
+        DataMap dataMap = dataMapRequest.getDataMap();
+        //Data set
+        dataMap.putString(key_name, sync_data);//("keyname",data);
+
+        // Data Push
+        PutDataRequest request = dataMapRequest.asPutDataRequest();
+        PendingResult<DataApi.DataItemResult> pendingResult = Wearable.DataApi.putDataItem(mGoogleApiClient, request);
+        pendingResult.setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
+            @Override
+            public void onResult(DataApi.DataItemResult dataItemResult) {
+                Log.d("TAG", "onResult:" + dataItemResult.getStatus().toString());
+            }
+        });
+
     }
 
     @Override
@@ -49,4 +299,11 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    public void SendSensorNum(String sendstr){
+        bluetoothClient.doSend(sendstr);
+        bluetoothClient.doReceive();
+
+    }
+
 }

@@ -15,6 +15,7 @@
 
     <TextView
         android:text="Hello World!"
+        android:id="@+id/resulttxtview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 </RelativeLayout>
