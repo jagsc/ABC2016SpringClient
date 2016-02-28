@@ -10,6 +10,15 @@
         android:background="@drawable/light">
 
         <Button
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:text="終了"
+            android:id="@+id/btn_exit_res"
+            android:layout_row="0"
+            android:layout_column="7"
+            android:layout_gravity="top|right" />
+
+        <Button
             android:layout_width="fill_parent"
             android:layout_height="60dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
@@ -18,6 +27,17 @@
             android:layout_row="1"
             android:layout_column="7"
             android:layout_gravity="top|center_horizontal" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="ありがとうございました"
+            android:id="@+id/textView_thank"
+            android:layout_row="3"
+            android:layout_column="7"
+            android:textSize="16dp"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_vertical" />
 
         <Button
             android:layout_width="fill_parent"
@@ -28,6 +48,7 @@
             android:layout_row="4"
             android:layout_column="7"
             android:layout_gravity="bottom|center_horizontal" />
+
         <!--
         <Button
             android:layout_width="wrap_content"
@@ -39,4 +60,5 @@
             android:layout_gravity="bottom|center_horizontal" />
             -->
     </GridLayout>
+
 </LinearLayout>

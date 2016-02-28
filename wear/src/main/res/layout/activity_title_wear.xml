@@ -9,24 +9,24 @@
         android:layout_gravity="top|center">
 
         <Button
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:text="終了"
+            android:id="@+id/btn_exit_tit"
+            android:layout_row="0"
+            android:layout_column="0"
+            android:layout_gravity="top|right" />
+<!--
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="スタート"
             android:id="@+id/btn_to_start"
-            android:layout_row="0"
+            android:layout_row="2"
             android:layout_column="0"
             android:textSize="25dp"
             android:layout_gravity="center_horizontal" />
 
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView_ready"
-            android:layout_row="4"
-            android:layout_column="0"
-            android:layout_gravity="center_vertical"
-            android:textSize="20dp" />
-        <!--
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -35,7 +35,15 @@
             android:layout_row="5"
             android:layout_column="0"
             android:layout_gravity="center_horizontal" />
-        -->
+-->
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView_ready"
+            android:layout_row="5"
+            android:layout_column="0"
+            android:layout_gravity="center_vertical"
+            android:textSize="20dp" />
     </GridLayout>
 
 </LinearLayout>
