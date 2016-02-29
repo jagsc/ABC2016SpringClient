@@ -22,7 +22,6 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="@string/thanks"
-            android:id="@+id/text_to_thanks"
             android:layout_row="0"
             android:layout_column="4"
             android:layout_gravity="center_vertical"
