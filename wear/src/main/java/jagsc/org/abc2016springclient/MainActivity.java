@@ -4,6 +4,7 @@ package jagsc.org.abc2016springclient;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.BoxInsetLayout;
@@ -20,6 +21,8 @@ import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.DataItemBuffer;
 import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.MessageApi;
@@ -28,17 +31,18 @@ import com.google.android.gms.wearable.Wearable;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
 
-public class MainActivity extends WearableActivity implements View.OnClickListener,GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,DataApi.DataListener,MessageApi.MessageListener{
+public class MainActivity extends WearableActivity implements View.OnClickListener,GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener,DataApi.DataListener,MessageApi.MessageListener{
 
     private static final SimpleDateFormat AMBIENT_DATE_FORMAT = new SimpleDateFormat("HH:mm", Locale.US);
 
     //private GoogleApiClient mGoogleApiClient;
     private BoxInsetLayout mContainerView;
     private TextView mTextView;
-    private TextView mClockView;
     //private Button btn_start;//result画面への遷移のボタン
     private String scene;//dataAPIのシーン情報のkey
     private boolean ready;//準備完了状態
@@ -47,7 +51,6 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 
     private GlobalVariables globalv;
 
-    private int state;
 
 
     @Override
@@ -58,21 +61,11 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 
         globalv = (GlobalVariables) this.getApplication();
 
-        WearBluetoothTask wbttask = new WearBluetoothTask();
-        wbttask.strstate = wbttask.getBondState(state);
-
         btn_exit=(Button)findViewById(R.id.btn_exit_tit);
         btn_exit.setOnClickListener(this);
         mTextView = (TextView) findViewById(R.id.textView_ready);
 
-        if (wbttask.strstate.equals("接続中")) {
-            ready = true;
-            mTextView.setText("～準備完了～");
-        } else if (wbttask.strstate.equals("エラー")) {
-            ready = false;
-            mTextView.setText("Bluetoothの設定を行ってから再度実行してください");
-        }
-        globalv.mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
+        globalv.mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addOnConnectionFailedListener(this).addApi(Wearable.API).build();
 
 
 
@@ -120,7 +113,9 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
     protected void onStop(){
         super.onStop();
         if(globalv.mGoogleApiClient != null && globalv.mGoogleApiClient.isConnected()){
+            Log.d("TAG", Boolean.toString(globalv.mGoogleApiClient.isConnected()));
             globalv.mGoogleApiClient.disconnect();
+            Log.d("TAG", Boolean.toString(globalv.mGoogleApiClient.isConnected()));
         }
     }
 
@@ -176,6 +171,31 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
     @Override
     public void onConnected(Bundle bundle) {
         Log.d("TAG", "onConnected");
+        check_connection();
+    }
+
+    private void check_connection() {//非同期でwearにHandheldが接続されているかを確認(現時点ではとりあえず複数台でもokにしている)
+        new AsyncTask<Integer, Void, Integer>() {
+            @Override
+            protected Integer doInBackground(Integer... params) {
+                HashSet <String>results = new HashSet<>();
+                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(globalv.mGoogleApiClient).await();
+                for (Node node : nodes.getNodes()) {
+                    results.add(node.getId());
+                }
+                return results.size();
+            }
+            @Override
+            protected void onPostExecute(Integer results_size) {
+                if(results_size>0){
+                    ready = true;
+                    mTextView.setText("～準備完了～");
+                }else{
+                    ready = false;
+                    mTextView.setText("Android端末との接続を確認できませんでした");
+                }
+            }
+        }.execute();
     }
 
     @Override
@@ -232,6 +252,8 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.e("TAG", "onConnectionFailed");
+        ready = false;
+        mTextView.setText("Android端末との接続を確認できませんでした");
     }
 
     @Override
