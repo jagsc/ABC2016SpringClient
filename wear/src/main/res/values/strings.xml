@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">ABC2016SpringClient</string>
+    <string name="hello_world">Hello World!</string>
+    <string name="title_activity_main2">Main2Activity</string>
     <string name="titleimage">タイトル画像</string>
+    <string name="start">スタートボタン</string>
+    <string name="result">結果</string>
     <string name="thanks">ありがとうございました</string>
     <string name="exit">終了</string>
     <string name="win">Win</string>

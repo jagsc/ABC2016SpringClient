@@ -1,11 +1,9 @@
 package jagsc.org.abc2016springclient;
 
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.BoxInsetLayout;
@@ -14,8 +12,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.DataApi;
@@ -35,7 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class MainActivity extends WearableActivity implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, DataApi.DataListener, MessageApi.MessageListener {
+public class MainActivity extends WearableActivity implements View.OnClickListener,GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,DataApi.DataListener,MessageApi.MessageListener{
 
     private static final SimpleDateFormat AMBIENT_DATE_FORMAT = new SimpleDateFormat("HH:mm", Locale.US);
 
@@ -52,14 +48,6 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
     private GlobalVariables globalv;
 
     private int state;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
-
-    boolean connection_state;
-
 
 
     @Override
@@ -70,21 +58,22 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 
         globalv = (GlobalVariables) this.getApplication();
 
-        globalv.mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
+        WearBluetoothTask wbttask = new WearBluetoothTask();
+        wbttask.strstate = wbttask.getBondState(state);
 
-
-        btn_exit = (Button) findViewById(R.id.btn_exit_tit);
+        btn_exit=(Button)findViewById(R.id.btn_exit_tit);
         btn_exit.setOnClickListener(this);
         mTextView = (TextView) findViewById(R.id.textView_ready);
 
-
-        if (connection_state) {
+        if (wbttask.strstate.equals("接続中")) {
             ready = true;
             mTextView.setText("～準備完了～");
-        } else {
+        } else if (wbttask.strstate.equals("エラー")) {
             ready = false;
             mTextView.setText("Bluetoothの設定を行ってから再度実行してください");
         }
+        globalv.mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
+
 
 
         /*mContainerView = (BoxInsetLayout) findViewById(R.id.container);
@@ -97,11 +86,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
         button_result=(Button)findViewById(R.id.btn_to_result);//デバッグ用
         button_result.setOnClickListener(this);//デバッグ用
     */
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
-
     @Override
     public void onEnterAmbient(Bundle ambientDetails) {
         super.onEnterAmbient(ambientDetails);
@@ -121,59 +106,27 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
     }
 
     @Override
-    protected void onPause() {
+    protected void onPause(){
         super.onPause();
     }
 
     @Override
-    protected void onResume() {
+    protected void onResume(){
         super.onResume();
         globalv.mGoogleApiClient.connect();
     }
 
     @Override
-    protected void onStop() {
+    protected void onStop(){
         super.onStop();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://jagsc.org.abc2016springclient/http/host/path")
-        );
-        AppIndex.AppIndexApi.end(client, viewAction);
-        if (globalv.mGoogleApiClient != null && globalv.mGoogleApiClient.isConnected()) {
+        if(globalv.mGoogleApiClient != null && globalv.mGoogleApiClient.isConnected()){
             globalv.mGoogleApiClient.disconnect();
         }
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.disconnect();
     }
 
     @Override
-    protected void onStart() {
+    protected void onStart(){
         super.onStart();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://jagsc.org.abc2016springclient/http/host/path")
-        );
-        AppIndex.AppIndexApi.start(client, viewAction);
     }
 
     private void updateDisplay() {
@@ -188,10 +141,8 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
             mTextView.setTextColor(getResources().getColor(android.R.color.black));
             mClockView.setVisibility(View.GONE);
         }
-    */
-    }
-
-    public void onClick(View v) {
+    */}
+    public void onClick(View v){
         switch (v.getId()) {
             case R.id.btn_exit_tit:
 
@@ -222,13 +173,16 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
                 break;
           }*/
 
+    @Override
+    public void onConnected(Bundle bundle) {
+        Log.d("TAG", "onConnected");
+    }
 
     @Override
     public void onConnectionSuspended(int i) {
         Log.d("TAG", "onConnectionSuspended");
-
-
     }
+
 
 
     public void onDataChanged(DataEventBuffer dataEventBuffer) {//dataAPIが更新されたら自動で呼び出される
@@ -241,7 +195,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
                 //variable = dataMap.get~("keyname"); で受け取る
 
 
-                switch (event.getDataItem().getUri().toString()) {
+                switch(event.getDataItem().getUri().toString()) {
                     case "scene":
                         scene = dataMap.getString("scene");
                         switch (scene) {
@@ -274,19 +228,13 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
         }
     }
 
-    public void onConnected(Bundle savedInstanceState) {
-        Log.d("TAG", "onConnected");
-        globalv.mGoogleApiClient.isConnected();
 
-    }
-
-
+    @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.e("TAG", "onConnectionFailed");
-        globalv = (GlobalVariables) this.getApplication();
-
     }
 
+    @Override
     public void onMessageReceived(MessageEvent messageEvent) {
 
     }
