@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);//スリープ設定を無効にする
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -108,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if(bluetoothClient != null && bluetoothClient.is_connected()){
             bluetoothClient.doClose();
         }
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);//スリープ設定を有効にする
     }
 
     //----------------------------------------------------------------
