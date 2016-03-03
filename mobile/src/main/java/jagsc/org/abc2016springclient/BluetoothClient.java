@@ -252,14 +252,29 @@ public class BluetoothClient {
     /**
      * サーバとメッセージの送受信を行う非同期タスク。
      */
-    private class SendTask extends AsyncTask<String, Void, Object> {
+    private class SendTask extends AsyncTask<String, Void, Void> {
         @Override
-        protected Object doInBackground(String... params) {
+        protected Void doInBackground(String... params) {
             try {
                 btOut.flush();
+                return null;
+            } catch (Throwable t) {
+                doClose();
+                return null;
+            }
+        }
 
+        @Override
+        protected void onPostExecute(Void result) {
+            Log.d("BluetoothInfo","Sending is Success");
+        }
+    }
+
+    private class ReceiveTask extends AsyncTask<Void, Void, Object> {
+        @Override
+        protected Object doInBackground(Void... params) {
+            try {
                 byte[] buff = new byte[512];
-                await_ = true;
                 int len = btIn.read(buff);
 
                 return new String(buff, 0, len);
@@ -270,7 +285,7 @@ public class BluetoothClient {
         }
 
         @Override
-        protected void onPostExecute(Object result) {
+        protected void onPostExecute(Object result){
             if (result instanceof Exception) {
                 Log.e(TAG, result.toString(), (Throwable) result);
                 activity.errorDialog(result.toString());
@@ -279,50 +294,16 @@ public class BluetoothClient {
                 if( r_.equals("\0") ){
                     //Log.i("test","empty message");
                 } else {
-                    // TODO:Wearに転送する処理
+                    // TODO:readyやvibratorの転送.
                     Pattern p = Pattern.compile("scene:([^\n\0\r]*)");
                     Matcher m = p.matcher(r_);
                     if( m.find() ){
                         String scene_name_ = m.group(1);
                         Toast.makeText(activity,"scene is changed"+scene_name_,Toast.LENGTH_SHORT).show();//とりあえずトーストで表示
+                        activity.SyncData(scene_name_, "scene_name");
                     }
                 }
                 await_ = false;
-            }
-        }
-    }
-
-    private class ReceiveTask extends AsyncTask<String, Void, Object> {
-        @Override
-        protected Object doInBackground(String... params) {
-            try {
-                byte[] buff = new byte[512];
-                int len = btIn.read(buff);
-
-                return new String(buff, 0, len);
-            } catch (Throwable t) {
-                doClose();
-                return t;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Object result) {
-            if (result instanceof Exception) {
-                Log.e(TAG, result.toString(), (Throwable) result);
-                activity.errorDialog(result.toString());
-            } else {
-                // 結果を画面に反映。
-                //activity.doSetResultText(result.toString());
-                String[] detection_code = result.toString().split(":", 0);
-                if(detection_code[0].equals("scene")){
-                    activity.SyncData(detection_code[1], "scene_name");
-                }else if(detection_code[0].equals("ready")){
-                    activity.SyncData(detection_code[1],detection_code[0]);
-                }else if(detection_code[0].equals("vibrator")){
-                    activity.SyncData(detection_code[1],detection_code[0]);
-                }
-
             }
         }
     }
