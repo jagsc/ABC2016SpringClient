@@ -12,10 +12,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/**
- * Created by prprhyt on 2016/02/17.
- */
 public class BluetoothClient {
 
     private static final String TAG = "BluetoothTask";
@@ -38,12 +37,10 @@ public class BluetoothClient {
     private boolean have_connected=false; //過去に接続したことがあるかどうか
     private boolean is_connected=false; //現在の接続状況
 
-
-    private GlobalVariables globalv;
+    private boolean await_ = false;
 
     public BluetoothClient(MainActivity activity) {
         this.activity = activity;
-        globalv=(GlobalVariables) activity.getApplication();
     }
 
     /**
@@ -68,7 +65,7 @@ public class BluetoothClient {
         return have_connected;
     }
 
-    public boolean is_connected(){
+    public boolean is_connected() {
         return is_connected;
     }
 
@@ -82,11 +79,12 @@ public class BluetoothClient {
     /**
      * 非同期で指定されたデバイスの接続を開始する。
      * - 選択ダイアログから選択されたデバイスを設定される。
+     *
      * @param device 選択デバイス
      *               nullがきたら再接続なのでbluetoothDeviceの値は更新しない
      */
     public void doConnect(BluetoothDevice device) {
-        if(device!=null){
+        if (device != null) {
             bluetoothDevice = device;
         }
         try {
@@ -94,12 +92,11 @@ public class BluetoothClient {
             //Method m = bluetoothDevice.getClass().getMethod("createInsecureRfcommSocket", new Class[] {int.class});
             //bluetoothSocket = (BluetoothSocket) m.invoke(bluetoothDevice, 1);
             new ConnectTask().execute();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Log.e(TAG, e.toString(), e);
             activity.errorDialog(e.toString());
         }
-        is_connected=true;
+        is_connected = true;
     }
 
     /**
@@ -107,15 +104,79 @@ public class BluetoothClient {
      */
     public void doClose() {
         new CloseTask().execute();
-        is_connected=false;
+        is_connected = false;
     }
 
     /**
      * 非同期でメッセージの送受信を行う。
+     *
      * @param msg 送信メッセージ.
      */
     public void doSend(String msg) {
-        new SendTask().execute(msg);
+        byte[] buffer_ = new byte[msg.length() / 2 + 1];
+        for (int i = 0; i < msg.length(); ++i) {
+            int tmp;
+            switch (msg.charAt(i)) {
+                case '0':
+                    tmp = 0x01;
+                    break;
+                case '1':
+                    tmp = 0x02;
+                    break;
+                case '2':
+                    tmp = 0x03;
+                    break;
+                case '3':
+                    tmp = 0x04;
+                    break;
+                case '4':
+                    tmp = 0x05;
+                    break;
+                case '5':
+                    tmp = 0x06;
+                    break;
+                case '6':
+                    tmp = 0x07;
+                    break;
+                case '7':
+                    tmp = 0x08;
+                    break;
+                case '8':
+                    tmp = 0x09;
+                    break;
+                case '9':
+                    tmp = 0x0a;
+                    break;
+                case '-':
+                    tmp = 0x0b;
+                    break;
+                case '.':
+                    tmp = 0x0c;
+                    break;
+                case ',':
+                    tmp = 0x0d;
+                    break;
+                default:
+                    tmp = 0x00;
+                    break;
+            }
+            if (i % 2 == 0) {
+                buffer_[i / 2] = (byte) (tmp << 4);
+            } else {
+                buffer_[i / 2] += (byte) tmp;
+            }
+        }
+        try {
+            btOut.write(buffer_);
+            if( await_ ) {
+                btOut.write('\n');
+            }
+            else {
+                new SendTask().execute(msg);
+            }
+        } catch (Throwable t) {
+            doClose();
+        }
     }
 
     public void doReceive(){
@@ -149,7 +210,7 @@ public class BluetoothClient {
         @Override
         protected void onPostExecute(Object result) {
             if (result instanceof Throwable) {
-                Log.e(TAG,result.toString(),(Throwable)result);
+                Log.e(TAG, result.toString(), (Throwable) result);
                 activity.errorDialog(result.toString());
             } else {
                 activity.hideWaitDialog();
@@ -166,8 +227,12 @@ public class BluetoothClient {
         @Override
         protected Object doInBackground(Void... params) {
             try {
-                try{btOut.close();}catch(Throwable t){/*ignore*/}
-                try{btIn.close();}catch(Throwable t){/*ignore*/}
+                try {
+                    btOut.close();
+                } catch (Throwable t) {/*ignore*/}
+                try {
+                    btIn.close();
+                } catch (Throwable t) {/*ignore*/}
                 bluetoothSocket.close();
             } catch (Throwable t) {
                 return t;
@@ -178,7 +243,7 @@ public class BluetoothClient {
         @Override
         protected void onPostExecute(Object result) {
             if (result instanceof Throwable) {
-                Log.e(TAG,result.toString(),(Throwable)result);
+                Log.e(TAG, result.toString(), (Throwable) result);
                 activity.errorDialog(result.toString());
             }
         }
@@ -191,36 +256,13 @@ public class BluetoothClient {
         @Override
         protected Object doInBackground(String... params) {
             try {
-                byte[] buffer_ = new byte[params[0].length()/2+1];
-                for( int i = 0; i < params[0].length(); ++i ){
-                    int tmp;
-                    switch( params[0].charAt(i) ){
-                        case '0': tmp = 0x01; break;
-                        case '1': tmp = 0x02; break;
-                        case '2': tmp = 0x03; break;
-                        case '3': tmp = 0x04; break;
-                        case '4': tmp = 0x05; break;
-                        case '5': tmp = 0x06; break;
-                        case '6': tmp = 0x07; break;
-                        case '7': tmp = 0x08; break;
-                        case '8': tmp = 0x09; break;
-                        case '9': tmp = 0x0a; break;
-                        case '-': tmp = 0x0b; break;
-                        case '.': tmp = 0x0c; break;
-                        case ',': tmp = 0x0d; break;
-                        default: tmp = 0x00; break;
-                    }
-                    if( i % 2 == 0 ){
-                        buffer_[i/2] = (byte)( tmp << 4 );
-                    }
-                    else{
-                        buffer_[i/2] += (byte)tmp;
-                    }
-                }
-                btOut.write(buffer_);
                 btOut.flush();
 
-                return null;
+                byte[] buff = new byte[512];
+                await_ = true;
+                int len = btIn.read(buff);
+
+                return new String(buff, 0, len);
             } catch (Throwable t) {
                 doClose();
                 return t;
@@ -230,8 +272,22 @@ public class BluetoothClient {
         @Override
         protected void onPostExecute(Object result) {
             if (result instanceof Exception) {
-                Log.e(TAG,result.toString(),(Throwable)result);
+                Log.e(TAG, result.toString(), (Throwable) result);
                 activity.errorDialog(result.toString());
+            } else {
+                String r_ = result.toString();
+                if( r_.equals("\0") ){
+                    //Log.i("test","empty message");
+                } else {
+                    // TODO:Wearに転送する処理
+                    Pattern p = Pattern.compile("scene:([^\n\0\r]*)");
+                    Matcher m = p.matcher(r_);
+                    if( m.find() ){
+                        String scene_name_ = m.group(1);
+                        Toast.makeText(activity,"scene is changed"+scene_name_,Toast.LENGTH_SHORT).show();//とりあえずトーストで表示
+                    }
+                }
+                await_ = false;
             }
         }
     }
