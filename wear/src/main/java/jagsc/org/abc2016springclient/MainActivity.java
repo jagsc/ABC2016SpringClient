@@ -219,7 +219,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
                     case "scene":
                         scene = dataMap.getString("scene");
                         switch (scene) {
-                            case "scene:battle":
+                            case "battle":
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -230,7 +230,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
                                     }
                                 });
                                 break;
-                            case "scene:result":
+                            case "result":
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
