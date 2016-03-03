@@ -57,9 +57,6 @@ public class WearPlayingActivity extends WearableActivity implements  SensorEven
     private Boolean Vibe=false;//バイブするかどうかの真偽を入れる変数
     private Vibrator vib;//バイブさせる変数
 
-    private BoxInsetLayout mContainerView;
-    private TextView mTextView;
-    private TextView mClockView;
     private SensorManager manager;
     private AlertDialog.Builder alertdialog;
     private Button btn_exit;
@@ -82,8 +79,8 @@ public class WearPlayingActivity extends WearableActivity implements  SensorEven
         */
         manager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
-        btn_exit = (Button) findViewById(R.id.btn_win);
-        btn_exit.hasOnClickListeners();
+        btn_exit = (Button) findViewById(R.id.btn_exit_play);
+        btn_exit.setOnClickListener(this);
 
         globalv=(GlobalVariables) this.getApplication();
         //mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
@@ -106,7 +103,7 @@ public class WearPlayingActivity extends WearableActivity implements  SensorEven
     @Override
     public void onClick(View v){//デバッグ用
         switch (v.getId()) {
-            case R.id.btn_exit_tit:
+            case R.id.btn_exit_play:
 
                 alertdialog = new AlertDialog.Builder(WearPlayingActivity.this);
                 alertdialog.setTitle("終了確認");
@@ -193,7 +190,7 @@ public class WearPlayingActivity extends WearableActivity implements  SensorEven
             str_builder.append(Float.toString(sensordata[element_num]));
         }
         String send_data = new String(str_builder);
-        mTextView.setText(send_data);
+        //mTextView.setText(send_data);
         //SendToHandheld(sensordata, "sensordata", "/datapath");
         SendToHandheld(send_data);
 
