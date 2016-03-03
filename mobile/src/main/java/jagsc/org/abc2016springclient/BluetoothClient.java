@@ -113,74 +113,74 @@ public class BluetoothClient {
      * @param msg 送信メッセージ.
      */
     public void doSend(String msg) {
-        byte[] buffer_ = new byte[msg.length() / 2 + 1];
-        for (int i = 0; i < msg.length(); ++i) {
-            int tmp;
-            switch (msg.charAt(i)) {
-                case '0':
-                    tmp = 0x01;
-                    break;
-                case '1':
-                    tmp = 0x02;
-                    break;
-                case '2':
-                    tmp = 0x03;
-                    break;
-                case '3':
-                    tmp = 0x04;
-                    break;
-                case '4':
-                    tmp = 0x05;
-                    break;
-                case '5':
-                    tmp = 0x06;
-                    break;
-                case '6':
-                    tmp = 0x07;
-                    break;
-                case '7':
-                    tmp = 0x08;
-                    break;
-                case '8':
-                    tmp = 0x09;
-                    break;
-                case '9':
-                    tmp = 0x0a;
-                    break;
-                case '-':
-                    tmp = 0x0b;
-                    break;
-                case '.':
-                    tmp = 0x0c;
-                    break;
-                case ',':
-                    tmp = 0x0d;
-                    break;
-                default:
-                    tmp = 0x00;
-                    break;
-            }
-            if (i % 2 == 0) {
-                buffer_[i / 2] = (byte) (tmp << 4);
-            } else {
-                buffer_[i / 2] += (byte) tmp;
-            }
-        }
         try {
-            btOut.write(buffer_);
-            if( await_ ) {
-                btOut.write('\n');
+            if( !msg.isEmpty() ){
+
+                byte[] buffer_ = new byte[msg.length() / 2 + 1];
+                for (int i = 0; i < msg.length(); ++i) {
+                    int tmp;
+                    switch (msg.charAt(i)) {
+                        case '0':
+                            tmp = 0x01;
+                            break;
+                        case '1':
+                            tmp = 0x02;
+                            break;
+                        case '2':
+                            tmp = 0x03;
+                            break;
+                        case '3':
+                            tmp = 0x04;
+                            break;
+                        case '4':
+                            tmp = 0x05;
+                            break;
+                        case '5':
+                            tmp = 0x06;
+                            break;
+                        case '6':
+                            tmp = 0x07;
+                            break;
+                        case '7':
+                            tmp = 0x08;
+                            break;
+                        case '8':
+                            tmp = 0x09;
+                            break;
+                        case '9':
+                            tmp = 0x0a;
+                            break;
+                        case '-':
+                            tmp = 0x0b;
+                            break;
+                        case '.':
+                            tmp = 0x0c;
+                            break;
+                        case ',':
+                            tmp = 0x0d;
+                            break;
+                        default:
+                            tmp = 0x00;
+                            break;
+                    }
+                    if (i % 2 == 0) {
+                        buffer_[i / 2] = (byte) (tmp << 4);
+                    } else {
+                        buffer_[i / 2] += (byte) tmp;
+                    }
+                }
+                btOut.write(buffer_);
+                if( await_ ) {
+                    btOut.write('\n');
+                }
             }
-            else {
-                new SendTask().execute(msg);
+
+            if( !await_ ) {
+                new SendTask().execute();
             }
         } catch (Throwable t) {
             doClose();
         }
-    }
-
-    public void doReceive(){
-        new ReceiveTask().execute();
     }
 
     /**
@@ -230,9 +230,6 @@ public class BluetoothClient {
                 try {
                     btOut.close();
                 } catch (Throwable t) {/*ignore*/}
-                try {
-                    btIn.close();
-                } catch (Throwable t) {/*ignore*/}
                 bluetoothSocket.close();
             } catch (Throwable t) {
                 return t;
@@ -252,35 +249,17 @@ public class BluetoothClient {
     /**
      * サーバとメッセージの送受信を行う非同期タスク。
      */
-    private class SendTask extends AsyncTask<String, Void, Void> {
+    private class SendTask extends AsyncTask<String, Void, Object> {
         @Override
-        protected Void doInBackground(String... params) {
+        protected Object doInBackground(String... params) {
             try {
                 btOut.flush();
-                return null;
-            } catch (Throwable t) {
-                doClose();
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            Log.d("BluetoothInfo","Sending is Success");
-        }
-    }
-
-    private class ReceiveTask extends AsyncTask<Void, Void, Object> {
-        @Override
-        protected Object doInBackground(Void... params) {
-            try {
                 byte[] buff = new byte[512];
                 int len = btIn.read(buff);
-
                 return new String(buff, 0, len);
             } catch (Throwable t) {
                 doClose();
-                return t;
+                return null;
             }
         }
 
@@ -290,20 +269,24 @@ public class BluetoothClient {
                 Log.e(TAG, result.toString(), (Throwable) result);
                 activity.errorDialog(result.toString());
             } else {
-                String r_ = result.toString();
-                if( r_.equals("\0") ){
-                    //Log.i("test","empty message");
+                if( result == null ){
+                    Log.e("test","disconnect");
                 } else {
-                    // TODO:readyやvibratorの転送.
-                    Pattern p = Pattern.compile("scene:([^\n\0\r]*)");
-                    Matcher m = p.matcher(r_);
-                    if( m.find() ){
-                        String scene_name_ = m.group(1);
-                        Toast.makeText(activity,"scene is changed"+scene_name_,Toast.LENGTH_SHORT).show();//とりあえずトーストで表示
-                        activity.SyncData(scene_name_, "scene_name");
+                    String r_ = result.toString();
+                    if( r_.equals("\0") ){
+                        //Log.i("test","empty message");
+                    } else {
+                        // TODO:readyやvibratorの転送.
+                        Pattern p = Pattern.compile("scene:([^\n\0\r]*)");
+                        Matcher m = p.matcher(r_);
+                        if( m.find() ){
+                            String scene_name_ = m.group(1);
+                            Toast.makeText(activity,"scene is changed: "+scene_name_,Toast.LENGTH_SHORT).show();//とりあえずトーストで表示
+                            activity.SyncData("scene", scene_name_);
+                        }
                     }
+                    await_ = false;
                 }
-                await_ = false;
             }
         }
     }

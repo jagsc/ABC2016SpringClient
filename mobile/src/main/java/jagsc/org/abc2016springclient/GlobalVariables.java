@@ -6,5 +6,5 @@ import android.app.Application;
  * Created by prprhyt on 2016/02/21.
  */
 public class GlobalVariables extends Application {
-    final static String DATA_PATH = "/datapath";
+    final static String DATA_PATH = "/abc2016cdata";
 }

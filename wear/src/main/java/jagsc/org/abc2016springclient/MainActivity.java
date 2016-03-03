@@ -1,6 +1,7 @@
 package jagsc.org.abc2016springclient;
 
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -65,8 +66,9 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
         btn_exit.setOnClickListener(this);
         mTextView = (TextView) findViewById(R.id.textView_ready);
 
-        globalv.mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addOnConnectionFailedListener(this).addApi(Wearable.API).build();
-
+        if (globalv.mGoogleApiClient == null) {
+            globalv.mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addOnConnectionFailedListener(this).addApi(Wearable.API).build();
+        }
 
 
         /*mContainerView = (BoxInsetLayout) findViewById(R.id.container);
@@ -101,6 +103,10 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
     @Override
     protected void onPause(){
         super.onPause();
+        if (globalv.mGoogleApiClient != null && globalv.mGoogleApiClient.isConnected()) {
+            Wearable.DataApi.removeListener(globalv.mGoogleApiClient, this);
+            globalv.mGoogleApiClient.disconnect();
+        }
     }
 
     @Override
@@ -116,6 +122,11 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
             Log.d("TAG", Boolean.toString(globalv.mGoogleApiClient.isConnected()));
             globalv.mGoogleApiClient.disconnect();
             Log.d("TAG", Boolean.toString(globalv.mGoogleApiClient.isConnected()));
+        }
+        if(globalv.mGoogleApiClient != null && globalv.mGoogleApiClient.isConnected()) {
+            //mGoogleApiClient.disconnect();
+            Wearable.DataApi.removeListener(globalv.mGoogleApiClient, this);
+            globalv.mGoogleApiClient.disconnect();
         }
     }
 
@@ -172,6 +183,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
     public void onConnected(Bundle bundle) {
         Log.d("TAG", "onConnected");
         check_connection();
+        Wearable.DataApi.addListener(globalv.mGoogleApiClient, this);
     }
 
     private void check_connection() {//非同期でwearにHandheldが接続されているかを確認(現時点ではとりあえず複数台でもokにしている)
@@ -189,7 +201,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
             protected void onPostExecute(Integer results_size) {
                 if(results_size>0){
                     ready = true;
-                    mTextView.setText("～準備完了～");
+                    mTextView.setText("接続中");
                 }else{
                     ready = false;
                     mTextView.setText("Android端末との接続を確認できませんでした");
@@ -214,36 +226,33 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
                 DataMap dataMap = DataMap.fromByteArray(event.getDataItem().getData());
                 //variable = dataMap.get~("keyname"); で受け取る
 
-
-                switch(event.getDataItem().getUri().toString()) {
-                    case "scene":
-                        scene = dataMap.getString("scene");
-                        switch (scene) {
-                            case "battle":
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        //受け取り後の処理をここに
-                                        //resultview.setText(resultstr);
-                                        Intent intentplay = new Intent(MainActivity.this, WearPlayingActivity.class);//WearPlayingActivityへ遷移
-                                        startActivity(intentplay);
-                                    }
-                                });
-                                break;
-                            case "result":
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        //受け取り後の処理をここに
-                                        //resultview.setText(resultstr);
-                                        Intent intentresult = new Intent(MainActivity.this, WearResultActivity.class);//WearRsultActivityへ遷移
-                                        startActivity(intentresult);
-                                    }
-                                });
-                                break;
-                        }
+                if( event.getDataItem().getUri().getPath().equals(globalv.DATA_PATH) ){
+                    scene = dataMap.getString("scene");
+                    switch (scene) {
+                        case "battle":
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    //受け取り後の処理をここに
+                                    //resultview.setText(resultstr);
+                                    Intent intent_ = new Intent(getApplicationContext(), WearPlayingActivity.class);
+                                    intent_.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(intent_);
+                                }
+                            });
+                            break;
+                        case "title":
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Intent intent_ = new Intent(getApplicationContext(), MainActivity.class);
+                                    intent_.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(intent_);
+                                }
+                            });
+                            break;
+                    }
                 }
-
             }
         }
     }

@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private String resultstr;
 
     private boolean connected_;
-
+    private Handler _handler = new Handler();
 
     private GlobalVariables globalv;
 
@@ -66,7 +67,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mGoogleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addApi(Wearable.API).build();
         resultstr="";
 
-       FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        _handler.postDelayed(new Runnable() {//Timer的な
+            @Override
+            public void run() {
+                if( connected_ ){
+                    SendSensorNum("");
+                }
+                _handler.postDelayed(this, 50);
+            }
+        }, 50);
+        SyncData("scene","title");
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -275,7 +286,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         pendingResult.setResultCallback(new ResultCallback<DataApi.DataItemResult>() {
             @Override
             public void onResult(DataApi.DataItemResult dataItemResult) {
-                Log.d("TAG", "onResult:" + dataItemResult.getStatus().toString());
+                Log.d("test", "onResult:" + dataItemResult.getStatus().toString());
             }
         });
 
@@ -305,8 +316,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     public void SendSensorNum(String sendstr){
         bluetoothClient.doSend(sendstr);
-        bluetoothClient.doReceive();
-
     }
 
 }

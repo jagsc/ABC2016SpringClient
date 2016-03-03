@@ -10,6 +10,6 @@ import com.google.android.gms.common.api.GoogleApiClient;
  */
 public class GlobalVariables extends Application {
     GoogleApiClient mGoogleApiClient;
-    final static String DATA_PATH = "/datapath";
+    final static String DATA_PATH = "/abc2016cdata";
 }
 

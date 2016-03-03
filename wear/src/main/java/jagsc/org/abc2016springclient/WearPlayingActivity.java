@@ -49,7 +49,7 @@ import com.google.android.gms.wearable.Wearable;
 /**
  * Created by yuuki on 2015/12/12.
  */
-public class WearPlayingActivity extends WearableActivity implements  SensorEventListener,View.OnClickListener,GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,DataApi.DataListener{ //DataApi.DataListener  {
+public class WearPlayingActivity extends WearableActivity implements  SensorEventListener,View.OnClickListener { //DataApi.DataListener  {
 
     //private GoogleApiClient mGoogleApiClient;
     private String scene;//dataAPIのシーン情報のkey
@@ -95,9 +95,17 @@ public class WearPlayingActivity extends WearableActivity implements  SensorEven
             }
         }, 50);
 
-        PutDataRequest dataMapRequest = PutDataRequest.create(globalv.DATA_PATH);
+        ArrayList<List<Sensor>> sensors = new ArrayList<List<Sensor>>();
+        sensors.add(manager.getSensorList(Sensor.TYPE_ACCELEROMETER));
+        sensors.add(manager.getSensorList(Sensor.TYPE_GYROSCOPE));
 
+        for(List<Sensor> sensor : sensors){
+            if(sensor.size()>0){
+                manager.registerListener(this,sensor.get(0),SensorManager.SENSOR_DELAY_GAME);
+            }
+        }
 
+        globalv.mGoogleApiClient.connect();
     }
 
     @Override
@@ -130,34 +138,21 @@ public class WearPlayingActivity extends WearableActivity implements  SensorEven
         super.onStop();
         manager.unregisterListener(this);
         _handler.removeCallbacksAndMessages(null);
-        if(globalv.mGoogleApiClient != null && globalv.mGoogleApiClient.isConnected()){
-            globalv.mGoogleApiClient.disconnect();
-        }
+        _handler = null;
+    }
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
     }
 
     @Override
     protected void onPause(){
         super.onPause();
-        if(globalv.mGoogleApiClient != null && globalv.mGoogleApiClient.isConnected()){
-            globalv.mGoogleApiClient.disconnect();
-        }
     }
 
     @Override
     protected void onResume(){
         super.onResume();
-
-        ArrayList<List<Sensor>> sensors = new ArrayList<List<Sensor>>();
-        sensors.add( manager.getSensorList(Sensor.TYPE_ACCELEROMETER));
-        sensors.add(manager.getSensorList(Sensor.TYPE_GYROSCOPE));
-
-        for(List<Sensor> sensor : sensors){
-            if(sensor.size()>0){
-                manager.registerListener(this,sensor.get(0),SensorManager.SENSOR_DELAY_GAME);
-            }
-        }
-
-        globalv.mGoogleApiClient.connect();
     }
 
     @Override
@@ -196,72 +191,10 @@ public class WearPlayingActivity extends WearableActivity implements  SensorEven
 
     }
 
-    @Override
-    public void onDataChanged(DataEventBuffer dataEventBuffer) {//dataAPIが更新されたら自動で呼び出される
-        for (DataEvent event : dataEventBuffer) {
-            if (event.getType() == DataEvent.TYPE_DELETED) {
-                Log.d("TAG", "DataItem deleted: " + event.getDataItem().getUri());
-            } else if (event.getType() == DataEvent.TYPE_CHANGED) {
-                Log.d("TAG", "DataItem changed: " + event.getDataItem().getUri());
-                DataMap dataMap = DataMap.fromByteArray(event.getDataItem().getData());
-                //variable = dataMap.get~("keyname"); で受け取る
-
-
-                switch(event.getDataItem().getUri().toString()) {
-                    case "scene":
-                        scene = dataMap.getString("scene");
-                        switch (scene) {
-                            case "scene:title":
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        //受け取り後の処理をここに
-                                        //resultview.setText(resultstr);
-                                        Intent intenttitle = new Intent(WearPlayingActivity.this, MainActivity.class);//MainActivityへ遷移
-                                        startActivity(intenttitle);
-                                    }
-                                });
-                                break;
-                            case "scene:result":
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        //受け取り後の処理をここに
-                                        //resultview.setText(resultstr);
-                                        Intent intentresult = new Intent(WearPlayingActivity.this, WearResultActivity.class);//WearResultActivityへ遷移
-                                        startActivity(intentresult);
-                                    }
-                                });
-                                break;
-                        }
-                    case "vibrator":
-                        int num = dataMap.getInt("vibrator");
-                        vib = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);//バイブさせるためのサービスをvibに入れる
-                        vib.vibrate(num);
-                        break;
-                }
-
-            }
-        }
-    }
-
-
-
-    @Override
-    public void onConnected(Bundle bundle){
-        Log.d("TAG", "onConnected");
-    }
-    @Override
-    public void onConnectionSuspended(int i){
-        Log.d("TAG", "onConnectionSuspended");
-    }
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult){
-        Log.e("TAG", "onConnectionFailed");
-    }
-
     public void SendToHandheld(String send_data){
-        if(send_data == null) return;
+        if(send_data == null) {
+            return;
+        }
         new AsyncTask<String, Void, String>() {
             @Override
             protected String doInBackground(String... params) {
