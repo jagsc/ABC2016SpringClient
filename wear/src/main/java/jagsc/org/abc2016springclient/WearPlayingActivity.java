@@ -72,6 +72,7 @@ public class WearPlayingActivity extends WearableActivity implements  SensorEven
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playing_wear);//activity_playing_wearを表示
+        setAmbientEnabled();
 
         /*mContainerView = (BoxInsetLayout) findViewById(R.id.container);
         mTextView = (TextView) findViewById(R.id.text);
@@ -133,6 +134,20 @@ public class WearPlayingActivity extends WearableActivity implements  SensorEven
         }
     }
 
+    @Override
+    public void onEnterAmbient(Bundle ambientDetails) {
+        super.onEnterAmbient(ambientDetails);
+    }
+
+    @Override
+    public void onUpdateAmbient() {
+        super.onUpdateAmbient();
+    }
+
+    @Override
+    public void onExitAmbient() {
+        super.onExitAmbient();
+    }
     @Override
     protected void onStop(){
         super.onStop();

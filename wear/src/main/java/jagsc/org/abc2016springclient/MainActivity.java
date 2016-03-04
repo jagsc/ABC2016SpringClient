@@ -96,8 +96,8 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
 
     @Override
     public void onExitAmbient() {
-        updateDisplay();
         super.onExitAmbient();
+        updateDisplay();
     }
 
     @Override
