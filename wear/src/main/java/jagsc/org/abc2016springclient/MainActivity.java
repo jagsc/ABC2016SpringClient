@@ -159,6 +159,7 @@ public class MainActivity extends WearableActivity implements View.OnClickListen
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         MainActivity.this.moveTaskToBack(true);
+                        android.os.Process.killProcess(android.os.Process.myPid());
                     }
                 });
                 alertdialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
